@@ -2,15 +2,36 @@ import { useState, useEffect } from 'react'
 import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
+import { audioService } from './services/audioService'
 import './App.css'
 
 function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings())
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [russianText, setRussianText] = useState('')
+  const [translatedText, setTranslatedText] = useState('')
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
     saveSettings(newSettings)
+  }
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      const audioBlob = await audioService.stopRecording()
+      setIsRecording(false)
+      console.log('Recorded blob:', audioBlob)
+      // TODO: Send to STT in Phase 4
+    } else {
+      const hasPermission = await audioService.requestPermission()
+      if (hasPermission) {
+        audioService.startRecording()
+        setIsRecording(true)
+      } else {
+        alert('Microphone permission is required.')
+      }
+    }
   }
 
   return (
@@ -35,7 +56,13 @@ function App() {
         <div className="flex-1 bg-white p-6 flex flex-col border-b overflow-y-auto">
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Russian</span>
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-2xl text-gray-300 italic">Tap microphone to start...</p>
+            {russianText ? (
+              <p className="text-2xl text-gray-800">{russianText}</p>
+            ) : (
+              <p className="text-2xl text-gray-300 italic">
+                {isRecording ? 'Listening...' : 'Tap microphone to start...'}
+              </p>
+            )}
           </div>
         </div>
 
@@ -45,16 +72,29 @@ function App() {
             {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
           </span>
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-2xl text-gray-300 italic">Translation will appear here</p>
+            {translatedText ? (
+              <p className="text-2xl text-blue-600 font-medium">{translatedText}</p>
+            ) : (
+              <p className="text-2xl text-gray-300 italic">Translation will appear here</p>
+            )}
           </div>
         </div>
       </main>
 
       {/* Footer / Microphone Button */}
       <footer className="p-8 bg-white border-t flex justify-center">
-        <button className="bg-blue-600 text-white p-6 rounded-full shadow-lg hover:bg-blue-700 transition-all transform active:scale-95">
+        <button 
+          onClick={toggleRecording}
+          className={`${
+            isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600'
+          } text-white p-6 rounded-full shadow-lg hover:opacity-90 transition-all transform active:scale-95`}
+        >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            {isRecording ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            )}
           </svg>
         </button>
       </footer>

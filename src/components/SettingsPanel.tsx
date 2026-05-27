@@ -1,11 +1,5 @@
 import React from 'react';
-
-interface Settings {
-  mistralApiKey: string;
-  googleApiKey: string;
-  mistralVoice: string;
-  targetLanguage: string;
-}
+import type { Settings } from '../services/settingsService';
 
 interface SettingsPanelProps {
   settings: Settings;

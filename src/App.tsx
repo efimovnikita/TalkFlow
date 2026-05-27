@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import SettingsPanel from './components/SettingsPanel'
-import { loadSettings, saveSettings, Settings } from './services/settingsService'
+import { loadSettings, saveSettings } from './services/settingsService'
+import type { Settings } from './services/settingsService'
 import './App.css'
 
 function App() {

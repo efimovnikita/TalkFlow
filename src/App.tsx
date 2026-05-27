@@ -107,7 +107,7 @@ function App() {
           <div className="p-4 bg-white/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Russian</span>
           </div>
-          <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${russianText ? 'justify-start items-start' : 'justify-center items-center'}`}>
+          <div className={`flex-1 overflow-y-auto flex flex-col ${russianText ? 'px-6 pb-6 pt-2 justify-start items-start' : 'p-6 justify-center items-center'}`}>
             {russianText ? (
               <p className="text-2xl text-gray-800 w-full">{russianText}</p>
             ) : (
@@ -125,7 +125,7 @@ function App() {
               {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
             </span>
           </div>
-          <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${translatedText ? 'justify-start items-start' : 'justify-center items-center'}`}>
+          <div className={`flex-1 overflow-y-auto flex flex-col ${translatedText ? 'px-6 pb-6 pt-2 justify-start items-start' : 'p-6 justify-center items-center'}`}>
             {translatedText ? (
               <p className="text-2xl text-blue-600 font-medium w-full">{translatedText}</p>
             ) : (

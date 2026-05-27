@@ -74,7 +74,7 @@ export const synthesizeSpeech = async (text: string, voiceId: string, apiKey: st
     // @ts-ignore - The SDK types might be incomplete for the async iterator
     for await (const event of stream) {
       if (event.event === "speech.audio.delta") {
-        const base64Data = event.data.audioData;
+        const base64Data = (event.data as any).audioData;
         const binaryString = atob(base64Data);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -82,7 +82,7 @@ export const synthesizeSpeech = async (text: string, voiceId: string, apiKey: st
         }
         audioChunks.push(bytes);
       } else if (event.event === "speech.audio.done") {
-        console.log("Stream done. Usage:", event.data.usage);
+        console.log("Stream done. Usage:", (event.data as any).usage);
       }
     }
 

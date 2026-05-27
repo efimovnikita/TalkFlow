@@ -3,6 +3,7 @@ import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
+import { transcribeSpeech } from './services/mistralService'
 import './App.css'
 
 function App() {
@@ -25,9 +26,17 @@ function App() {
       setIsRecording(false)
       
       if (audioBlob) {
-        console.log('Recorded blob:', audioBlob)
-        // TODO: Send to STT in Phase 4
-        setRussianText('Processing speech...')
+        try {
+          setRussianText('Transcribing...')
+          const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
+          setRussianText(text)
+          // TODO: Send to Translation in next task
+        } catch (e: any) {
+          alert('STT Error: ' + e.message)
+          setRussianText('Transcription failed.')
+        } finally {
+          setIsProcessing(false)
+        }
       } else {
         setIsProcessing(false)
       }

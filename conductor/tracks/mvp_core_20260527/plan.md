@@ -8,7 +8,7 @@
 
 ## Phase 2: Configuration & Settings
 - [x] Task: Create Settings Panel UI with API key fields and dropdowns (3c430d8)
-- [ ] Task: Implement Local Storage persistence for settings
+- [~] Task: Implement Local Storage persistence for settings
 - [ ] Task: Create basic layout with Split Screen view
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Configuration & Settings' (Protocol in workflow.md)
 

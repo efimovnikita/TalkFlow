@@ -29,3 +29,33 @@ export const transcribeSpeech = async (audioBlob: Blob, apiKey: string): Promise
     throw e;
   }
 };
+
+export const synthesizeSpeech = async (text: string, voice: string, apiKey: string): Promise<Blob> => {
+  if (!apiKey) throw new Error('Mistral API Key is missing');
+  if (!text) throw new Error('Text is empty');
+
+  try {
+    const response = await fetch('https://api.mistral.ai/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'mistral-tts-latest',
+        input: text,
+        voice: voice || 'azure', // Fallback to a default if voice is not set
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'TTS Request failed');
+    }
+
+    return await response.blob();
+  } catch (e: any) {
+    console.error('Mistral TTS Error:', e);
+    throw e;
+  }
+};

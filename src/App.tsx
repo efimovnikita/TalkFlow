@@ -3,7 +3,7 @@ import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
-import { transcribeSpeech } from './services/mistralService'
+import { transcribeSpeech, synthesizeSpeech } from './services/mistralService'
 import { translateText } from './services/translationService'
 import './App.css'
 
@@ -36,6 +36,14 @@ function App() {
             setTranslatedText('Translating...')
             const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
             setTranslatedText(translation)
+            
+            if (translation) {
+              setTranslatedText(translation + ' 🔊')
+              const audioBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
+              const audioUrl = URL.createObjectURL(audioBlob)
+              const audio = new Audio(audioUrl)
+              await audio.play()
+            }
           }
         } catch (e: any) {
           alert('Error: ' + e.message)

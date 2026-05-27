@@ -4,6 +4,7 @@ import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
 import { transcribeSpeech } from './services/mistralService'
+import { translateText } from './services/translationService'
 import './App.css'
 
 function App() {
@@ -30,10 +31,15 @@ function App() {
           setRussianText('Transcribing...')
           const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
           setRussianText(text)
-          // TODO: Send to Translation in next task
+          
+          if (text) {
+            setTranslatedText('Translating...')
+            const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
+            setTranslatedText(translation)
+          }
         } catch (e: any) {
-          alert('STT Error: ' + e.message)
-          setRussianText('Transcription failed.')
+          alert('Error: ' + e.message)
+          setRussianText('Process failed.')
         } finally {
           setIsProcessing(false)
         }

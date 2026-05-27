@@ -1,15 +1,14 @@
-import { Mistral } from "@mistralai/mistralai";
-
-const getClient = (apiKey: string) => new Mistral({ apiKey });
-
 export const fetchVoices = async (apiKey: string) => {
   if (!apiKey) return [];
-  const client = getClient(apiKey);
   try {
-    const result = await client.audio.voices.list({ limit: 50, offset: 0 });
-    const allVoices = result.items ?? [];
-    // Only return voices with a userId (custom or public voices)
-    return allVoices.map(v => ({ id: v.id, name: v.name || v.id }));
+    const response = await fetch('https://api.mistral.ai/v1/audio/voices', {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+      },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (data.items || []).map((v: any) => ({ id: v.id, name: v.name || v.id }));
   } catch (e) {
     console.error('Failed to fetch Mistral voices', e);
     return [];
@@ -17,19 +16,37 @@ export const fetchVoices = async (apiKey: string) => {
 };
 
 export const transcribeSpeech = async (audioBlob: Blob, apiKey: string): Promise<string> => {
+  console.log('Transcribing with fetch. Blob size:', audioBlob.size, 'type:', audioBlob.type);
   if (!apiKey) throw new Error('Mistral API Key is missing');
 
-  const client = getClient(apiKey);
+  // Determine extension from type, default to webm
+  const extension = audioBlob.type.includes('mp4') ? 'mp4' : 'webm';
+  const file = new File([audioBlob], `recording.${extension}`, { type: audioBlob.type });
+  
+  const formData = new FormData();
+  formData.append('model', 'voxtral-mini-latest');
+  formData.append('language', 'ru');
+  formData.append('response_format', 'json');
+  formData.append('file', file);
+
   try {
-    const response = await client.audio.transcriptions.create({
-      model: 'mistral-stt-latest',
-      file: {
-        fileName: 'recording.webm',
-        content: audioBlob,
+    console.log('Sending offline STT request to Mistral...');
+    const response = await fetch('https://api.mistral.ai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
       },
+      body: formData,
     });
 
-    return response.text;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'STT Request failed');
+    }
+
+    const data = await response.json();
+    console.log('Transcription response:', data);
+    return data.text;
   } catch (e: any) {
     console.error('Mistral STT Error:', e);
     throw e;
@@ -37,26 +54,30 @@ export const transcribeSpeech = async (audioBlob: Blob, apiKey: string): Promise
 };
 
 export const synthesizeSpeech = async (text: string, voiceId: string, apiKey: string): Promise<Blob> => {
+  console.log('Synthesizing with fetch. Text:', text, 'Voice:', voiceId);
   if (!apiKey) throw new Error('Mistral API Key is missing');
-  if (!text) throw new Error('Text is empty');
 
-  const client = getClient(apiKey);
   try {
-    const response = await client.audio.speech.create({
-      model: 'mistral-tts-latest',
-      input: text,
-      voiceId: voiceId || 'azure', // Fallback
-      responseFormat: 'mp3',
+    const response = await fetch('https://api.mistral.ai/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'mistral-tts-latest',
+        input: text,
+        voice: voiceId || 'azure',
+        response_format: 'mp3',
+      }),
     });
 
-    // The SDK might return a stream or a blob depending on options
-    // If it's a Response object or has a .blob() method
-    if (response instanceof Response) {
-      return await response.blob();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'TTS Request failed');
     }
-    
-    // If it's already a blob or similar
-    return response as unknown as Blob;
+
+    return await response.blob();
   } catch (e: any) {
     console.error('Mistral TTS Error:', e);
     throw e;

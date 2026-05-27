@@ -11,7 +11,20 @@ interface SettingsPanelProps {
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose }) => {
   const [localSettings, setLocalSettings] = React.useState<Settings>(settings);
   const [availableVoices, setAvailableVoices] = useState<{id: string, name: string}[]>([]);
+  const [availableMics, setAvailableMics] = useState<MediaDeviceInfo[]>([]);
   const [isLoadingVoices, setIsLoadingVoices] = useState(false);
+
+  useEffect(() => {
+    // Request permission once to ensure labels are populated
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      navigator.mediaDevices.enumerateDevices().then(devices => {
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        setAvailableMics(mics);
+      });
+      // Stop the temporary stream immediately
+      stream.getTracks().forEach(t => t.stop());
+    }).catch(err => console.error("Mic enumeration error", err));
+  }, []);
 
   useEffect(() => {
     const loadVoices = async () => {
@@ -105,6 +118,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
             >
               <option value="en">English</option>
               <option value="it">Italian</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Microphone</label>
+            <select
+              name="microphoneDeviceId"
+              value={localSettings.microphoneDeviceId}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+            >
+              <option value="">Default Microphone</option>
+              {availableMics.map(m => (
+                <option key={m.deviceId} value={m.deviceId}>{m.label || `Microphone ${m.deviceId.slice(0,5)}`}</option>
+              ))}
             </select>
           </div>
           

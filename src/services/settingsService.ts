@@ -3,6 +3,7 @@ export interface Settings {
   googleApiKey: string;
   mistralVoice: string;
   targetLanguage: string;
+  microphoneDeviceId: string;
 }
 
 const STORAGE_KEY = 'talkflow_settings';
@@ -12,6 +13,7 @@ const DEFAULT_SETTINGS: Settings = {
   googleApiKey: '',
   mistralVoice: 'voice1',
   targetLanguage: 'en',
+  microphoneDeviceId: '',
 };
 
 export const loadSettings = (): Settings => {

@@ -21,41 +21,58 @@ function App() {
   }
 
   const toggleRecording = async () => {
+    console.log('Toggle recording button clicked. isRecording:', isRecording);
     if (isRecording) {
       setIsProcessing(true)
+      console.log('Stopping recording...');
       const audioBlob = await audioService.stopRecording()
       setIsRecording(false)
       
       if (audioBlob) {
+        console.log('Audio blob captured. Size:', audioBlob.size);
+        
         try {
           setRussianText('Transcribing...')
           const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
+          console.log('Transcription result:', text);
+          
+          if (!text) {
+             setRussianText('No speech detected.');
+             return;
+          }
+          
           setRussianText(text)
           
           if (text) {
             setTranslatedText('Translating...')
             const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
+            console.log('Translation result:', translation);
             setTranslatedText(translation)
             
             if (translation) {
               setTranslatedText(translation + ' 🔊')
+              console.log('Synthesizing speech...');
               const audioBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
+              console.log('Synthesis complete. Blob ready.');
               const audioUrl = URL.createObjectURL(audioBlob)
               const audio = new Audio(audioUrl)
               await audio.play()
+              console.log('Playback started.');
             }
           }
         } catch (e: any) {
+          console.error('Error in translation loop:', e);
           alert('Error: ' + e.message)
           setRussianText('Process failed.')
         } finally {
           setIsProcessing(false)
         }
       } else {
+        console.warn('No audio blob captured.');
         setIsProcessing(false)
       }
     } else {
-      const hasPermission = await audioService.requestPermission()
+      const hasPermission = await audioService.requestPermission(settings.microphoneDeviceId)
       if (hasPermission) {
         audioService.startRecording()
         setIsRecording(true)

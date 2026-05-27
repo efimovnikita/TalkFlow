@@ -109,7 +109,7 @@ function App() {
           </div>
           <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${russianText ? 'justify-start items-start' : 'justify-center items-center'}`}>
             {russianText ? (
-              <p className="text-2xl text-gray-800 w-full pt-4">{russianText}</p>
+              <p className="text-2xl text-gray-800 w-full">{russianText}</p>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isRecording ? 'Listening...' : 'Tap microphone to start speaking...'}
@@ -127,7 +127,7 @@ function App() {
           </div>
           <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${translatedText ? 'justify-start items-start' : 'justify-center items-center'}`}>
             {translatedText ? (
-              <p className="text-2xl text-blue-600 font-medium w-full pt-4">{translatedText}</p>
+              <p className="text-2xl text-blue-600 font-medium w-full">{translatedText}</p>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isProcessing ? 'Translating...' : 'Translation will appear here'}

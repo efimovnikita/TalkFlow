@@ -13,7 +13,7 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Configuration & Settings' (Protocol in workflow.md)
 
 ## Phase 3: Audio & VAD
-- [~] Task: Implement Microphone access and Audio Recording service
+- [x] Task: Implement Microphone access and Audio Recording service (0622594)
 - [ ] Task: Integrate `web-vad` for speech detection
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Audio & VAD' (Protocol in workflow.md)
 

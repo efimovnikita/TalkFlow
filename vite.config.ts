@@ -13,6 +13,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons.svg'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15MB to cover the WASM file
+      },
       manifest: {
         name: 'TalkFlow - Voice Translator',
         short_name: 'TalkFlow',

@@ -12,10 +12,11 @@
 - [x] Task: Create basic layout with Split Screen view (f63cbb9)
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Configuration & Settings' (Protocol in workflow.md)
 
-## Phase 3: Audio & VAD
+## Phase 3: Audio & VAD [checkpoint: 6c0f1e1]
 - [x] Task: Implement Microphone access and Audio Recording service (0622594)
-- [x] Task: Integrate `web-vad` for speech detection (4f31fb6)
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Audio & VAD' (Protocol in workflow.md)
+- [x] Task: Integrate manual recording as a reliable alternative to VAD (6c0f1e1)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Audio & VAD' (Protocol in workflow.md)
+
 
 ## Phase 4: Translation Loop Integration
 - [ ] Task: Implement Mistral STT integration

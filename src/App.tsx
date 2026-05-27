@@ -85,9 +85,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white shadow-sm p-4 flex justify-between items-center">
+      <header className="bg-white shadow-sm p-4 flex justify-between items-center z-10 relative">
         <h1 className="text-xl font-bold text-blue-600">TalkFlow</h1>
         <button 
           onClick={() => setIsSettingsOpen(true)}
@@ -101,15 +101,17 @@ function App() {
       </header>
 
       {/* Main Content (Split Screen) */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-0">
         {/* Top: Russian Source */}
-        <div className="flex-1 bg-white p-6 flex flex-col border-b overflow-y-auto">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Russian</span>
-          <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 bg-white flex flex-col border-b min-h-0">
+          <div className="p-4 bg-white/90 sticky top-0 backdrop-blur-sm z-10">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Russian</span>
+          </div>
+          <div className="flex-1 p-6 overflow-y-auto flex flex-col justify-center items-center">
             {russianText ? (
-              <p className="text-2xl text-gray-800 text-center">{russianText}</p>
+              <p className="text-2xl text-gray-800 text-center w-full">{russianText}</p>
             ) : (
-              <p className="text-2xl text-gray-300 italic text-center">
+              <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isRecording ? 'Listening...' : 'Tap microphone to start speaking...'}
               </p>
             )}
@@ -117,15 +119,17 @@ function App() {
         </div>
 
         {/* Bottom: Target Translation */}
-        <div className="flex-1 bg-gray-50 p-6 flex flex-col overflow-y-auto">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-            {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
-          </span>
-          <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 bg-gray-50 flex flex-col min-h-0">
+          <div className="p-4 bg-gray-50/90 sticky top-0 backdrop-blur-sm z-10">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
+            </span>
+          </div>
+          <div className="flex-1 p-6 overflow-y-auto flex flex-col justify-center items-center">
             {translatedText ? (
-              <p className="text-2xl text-blue-600 font-medium text-center">{translatedText}</p>
+              <p className="text-2xl text-blue-600 font-medium text-center w-full">{translatedText}</p>
             ) : (
-              <p className="text-2xl text-gray-300 italic text-center">
+              <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isProcessing ? 'Translating...' : 'Translation will appear here'}
               </p>
             )}
@@ -134,7 +138,7 @@ function App() {
       </main>
 
       {/* Footer / Microphone Button */}
-      <footer className="p-8 bg-white border-t flex justify-center">
+      <footer className="p-6 bg-white border-t flex justify-center z-10 relative">
         <button 
           onClick={toggleRecording}
           disabled={isProcessing}

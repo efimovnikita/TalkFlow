@@ -3,34 +3,38 @@ import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
+import { useMicVAD, utils } from "@ricky0123/vad-react"
 import './App.css'
 
 function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings())
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
+  const [isAutoMode, setIsAutoMode] = useState(false)
   const [russianText, setRussianText] = useState('')
   const [translatedText, setTranslatedText] = useState('')
+
+  const vad = useMicVAD({
+    startOnRealTime: false,
+    onSpeechEnd: (audio) => {
+      const wavBuffer = utils.encodeWAV(audio)
+      const blob = new Blob([wavBuffer], { type: "audio/wav" })
+      console.log("VAD detected speech end, blob created", blob)
+      // TODO: Send to STT in Phase 4
+    },
+  })
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
     saveSettings(newSettings)
   }
 
-  const toggleRecording = async () => {
-    if (isRecording) {
-      const audioBlob = await audioService.stopRecording()
-      setIsRecording(false)
-      console.log('Recorded blob:', audioBlob)
-      // TODO: Send to STT in Phase 4
+  const toggleAutoMode = () => {
+    if (isAutoMode) {
+      vad.pause()
+      setIsAutoMode(false)
     } else {
-      const hasPermission = await audioService.requestPermission()
-      if (hasPermission) {
-        audioService.startRecording()
-        setIsRecording(true)
-      } else {
-        alert('Microphone permission is required.')
-      }
+      vad.start()
+      setIsAutoMode(true)
     }
   }
 
@@ -59,9 +63,13 @@ function App() {
             {russianText ? (
               <p className="text-2xl text-gray-800">{russianText}</p>
             ) : (
-              <p className="text-2xl text-gray-300 italic">
-                {isRecording ? 'Listening...' : 'Tap microphone to start...'}
-              </p>
+              <div className="text-center">
+                <p className="text-2xl text-gray-300 italic mb-2">
+                  {isAutoMode ? (vad.userSpeaking ? 'Listening...' : 'Waiting for speech...') : 'Tap microphone to start...'}
+                </p>
+                {vad.loading && <p className="text-sm text-blue-500">Loading VAD model...</p>}
+                {vad.errored && <p className="text-sm text-red-500">VAD Error: {vad.errored.message}</p>}
+              </div>
             )}
           </div>
         </div>
@@ -84,13 +92,14 @@ function App() {
       {/* Footer / Microphone Button */}
       <footer className="p-8 bg-white border-t flex justify-center">
         <button 
-          onClick={toggleRecording}
+          onClick={toggleAutoMode}
+          disabled={vad.loading}
           className={`${
-            isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600'
-          } text-white p-6 rounded-full shadow-lg hover:opacity-90 transition-all transform active:scale-95`}
+            isAutoMode ? (vad.userSpeaking ? 'bg-red-500 animate-pulse' : 'bg-green-500') : 'bg-blue-600'
+          } ${vad.loading ? 'opacity-50 cursor-not-allowed' : ''} text-white p-6 rounded-full shadow-lg hover:opacity-90 transition-all transform active:scale-95`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {isRecording ? (
+            {isAutoMode ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
             ) : (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />

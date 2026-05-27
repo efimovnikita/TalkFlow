@@ -14,7 +14,7 @@
 
 ## Phase 3: Audio & VAD
 - [x] Task: Implement Microphone access and Audio Recording service (0622594)
-- [ ] Task: Integrate `web-vad` for speech detection
+- [~] Task: Integrate `web-vad` for speech detection
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Audio & VAD' (Protocol in workflow.md)
 
 ## Phase 4: Translation Loop Integration

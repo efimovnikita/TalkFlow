@@ -19,7 +19,7 @@
 
 
 ## Phase 4: Translation Loop Integration
-- [~] Task: Implement Mistral STT integration
+- [x] Task: Implement Mistral STT integration (0e75d99)
 - [ ] Task: Implement Google Cloud Translation integration
 - [ ] Task: Implement Mistral TTS integration with audio playback
 - [ ] Task: Connect VAD triggers to the full translation loop

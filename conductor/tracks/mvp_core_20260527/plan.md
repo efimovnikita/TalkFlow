@@ -6,11 +6,11 @@
 - [x] Task: Setup PWA manifest and service worker (e9f32ce)
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Project Scaffolding' (Protocol in workflow.md)
 
-## Phase 2: Configuration & Settings
+## Phase 2: Configuration & Settings [checkpoint: 1949641]
 - [x] Task: Create Settings Panel UI with API key fields and dropdowns (3c430d8)
 - [x] Task: Implement Local Storage persistence for settings (f63cbb9)
 - [x] Task: Create basic layout with Split Screen view (f63cbb9)
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Configuration & Settings' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Configuration & Settings' (Protocol in workflow.md)
 
 ## Phase 3: Audio & VAD
 - [ ] Task: Implement Microphone access and Audio Recording service

@@ -6,10 +6,10 @@
 - **Styling**: Tailwind CSS - For rapid, utility-first UI development and responsive design.
 
 ## AI & Services
-- **Speech-to-Text (STT)**: Mistral AI (Speech-to-Text API) - For transcribing Russian speech.
+- **Speech-to-Text (STT)**: Mistral AI (`voxtral-mini-latest`) - For transcribing Russian speech using offline `multipart/form-data` uploads.
 - **Translation**: Google Cloud Translation API - For translating between Russian, English, and Italian.
-- **Text-to-Speech (TTS)**: Mistral AI (Text-to-Speech API) - For high-quality target language synthesis.
-- **VAD**: `web-vad` or similar browser-based Voice Activity Detection library to handle audio triggers.
+- **Text-to-Speech (TTS)**: Mistral AI (`voxtral-mini-tts-2603`) - For high-quality target language synthesis using `@mistralai/mistralai` SDK with streaming support.
+- **Audio Capture**: Browser Native `MediaRecorder` API (Manual Mode) with device selection support, replacing automated VAD for better cross-browser reliability.
 
 ## Data & State
 - **Persistence**: Browser Local Storage - For storing API keys, user preferences (voices), and settings securely on the client side.

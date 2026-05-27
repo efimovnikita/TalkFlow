@@ -18,15 +18,15 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Audio & VAD' (Protocol in workflow.md)
 
 
-## Phase 4: Translation Loop Integration
+## Phase 4: Translation Loop Integration [checkpoint: 1baa453]
 - [x] Task: Implement Mistral STT integration (0e75d99)
 - [x] Task: Implement Google Cloud Translation integration (28a76ae)
 - [x] Task: Implement Mistral TTS integration with audio playback (7fa2d00)
 - [x] Task: Connect manual recording triggers to the full translation loop (7fa2d00)
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Translation Loop Integration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Translation Loop Integration' (Protocol in workflow.md)
 
-## Phase 5: Polishing & Final MVP
-- [ ] Task: Refine Split Screen UI and animations
-- [ ] Task: Add error handling for API failures
-- [ ] Task: Final PWA audit and optimization
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Polishing & Final MVP' (Protocol in workflow.md)
+## Phase 5: Polishing & Final MVP [checkpoint: 0211fac]
+- [x] Task: Refine Split Screen UI and animations (0211fac)
+- [x] Task: Add error handling for API failures (0211fac)
+- [x] Task: Final PWA audit and optimization (0211fac)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Polishing & Final MVP' (Protocol in workflow.md)

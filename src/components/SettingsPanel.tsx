@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Settings } from '../services/settingsService';
+import { fetchVoices } from '../services/mistralService';
 
 interface SettingsPanelProps {
   settings: Settings;
@@ -9,6 +10,25 @@ interface SettingsPanelProps {
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose }) => {
   const [localSettings, setLocalSettings] = React.useState<Settings>(settings);
+  const [availableVoices, setAvailableVoices] = useState<{id: string, name: string}[]>([]);
+  const [isLoadingVoices, setIsLoadingVoices] = useState(false);
+
+  useEffect(() => {
+    const loadVoices = async () => {
+      if (localSettings.mistralApiKey) {
+        setIsLoadingVoices(true);
+        try {
+          const voices = await fetchVoices(localSettings.mistralApiKey);
+          setAvailableVoices(voices);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsLoadingVoices(false);
+        }
+      }
+    };
+    loadVoices();
+  }, [localSettings.mistralApiKey]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -65,11 +85,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
               value={localSettings.mistralVoice}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              disabled={isLoadingVoices}
             >
-              <option value="voice1">Voice 1 (Default)</option>
-              <option value="voice2">Voice 2</option>
-              <option value="voice3">Voice 3</option>
+              <option value="azure">Azure (Default)</option>
+              {availableVoices.map(v => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
             </select>
+            {isLoadingVoices && <p className="text-xs text-blue-500 mt-1">Loading voices...</p>}
           </div>
           
           <div>

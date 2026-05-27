@@ -65,7 +65,7 @@ export const synthesizeSpeech = async (text: string, voiceId: string, apiKey: st
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'mistral-tts-latest',
+        model: 'voxtral-tts-latest',
         input: text,
         voice: voiceId || 'azure',
         response_format: 'mp3',

@@ -104,12 +104,12 @@ function App() {
       <main className="flex-1 flex flex-col min-h-0">
         {/* Top: Russian Source */}
         <div className="flex-1 bg-white flex flex-col border-b min-h-0">
-          <div className="p-4 bg-white/90 sticky top-0 backdrop-blur-sm z-10">
+          <div className="p-4 bg-white/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Russian</span>
           </div>
-          <div className="flex-1 p-6 overflow-y-auto flex flex-col justify-center items-center">
+          <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${russianText ? 'justify-start items-start' : 'justify-center items-center'}`}>
             {russianText ? (
-              <p className="text-2xl text-gray-800 text-center w-full">{russianText}</p>
+              <p className="text-2xl text-gray-800 w-full pt-4">{russianText}</p>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isRecording ? 'Listening...' : 'Tap microphone to start speaking...'}
@@ -120,14 +120,14 @@ function App() {
 
         {/* Bottom: Target Translation */}
         <div className="flex-1 bg-gray-50 flex flex-col min-h-0">
-          <div className="p-4 bg-gray-50/90 sticky top-0 backdrop-blur-sm z-10">
+          <div className="p-4 bg-gray-50/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
             </span>
           </div>
-          <div className="flex-1 p-6 overflow-y-auto flex flex-col justify-center items-center">
+          <div className={`flex-1 p-6 overflow-y-auto flex flex-col ${translatedText ? 'justify-start items-start' : 'justify-center items-center'}`}>
             {translatedText ? (
-              <p className="text-2xl text-blue-600 font-medium text-center w-full">{translatedText}</p>
+              <p className="text-2xl text-blue-600 font-medium w-full pt-4">{translatedText}</p>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isProcessing ? 'Translating...' : 'Translation will appear here'}

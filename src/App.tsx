@@ -14,10 +14,18 @@ function App() {
   const [russianText, setRussianText] = useState('')
   const [translatedText, setTranslatedText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [lastAudioUrl, setLastAudioUrl] = useState<string | null>(null)
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
     saveSettings(newSettings)
+  }
+
+  const handleReplayAudio = async () => {
+    if (lastAudioUrl) {
+      const audio = new Audio(lastAudioUrl)
+      await audio.play()
+    }
   }
 
   const toggleRecording = async () => {
@@ -54,7 +62,15 @@ function App() {
               console.log('Synthesizing speech...');
               const audioBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
               console.log('Synthesis complete. Blob ready.');
+              
+              // Clean up old URL
+              if (lastAudioUrl) {
+                URL.revokeObjectURL(lastAudioUrl)
+              }
+              
               const audioUrl = URL.createObjectURL(audioBlob)
+              setLastAudioUrl(audioUrl)
+              
               const audio = new Audio(audioUrl)
               await audio.play()
               console.log('Playback started.');
@@ -78,6 +94,7 @@ function App() {
         setIsRecording(true)
         setRussianText('')
         setTranslatedText('')
+        setLastAudioUrl(null)
       } else {
         alert('Microphone permission is required.')
       }
@@ -127,7 +144,21 @@ function App() {
           </div>
           <div className={`flex-1 overflow-y-auto flex flex-col ${translatedText ? 'px-6 pb-6 pt-2 justify-start items-start' : 'p-6 justify-center items-center'}`}>
             {translatedText ? (
-              <p className="text-2xl text-blue-600 font-medium w-full">{translatedText}</p>
+              <>
+                <p className="text-2xl text-blue-600 font-medium w-full">{translatedText}</p>
+                {lastAudioUrl && (
+                  <button
+                    onClick={handleReplayAudio}
+                    className="mt-4 p-3 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors flex items-center gap-2 shadow-sm"
+                    title="Replay Audio"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <span className="font-semibold">Replay</span>
+                  </button>
+                )}
+              </>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
                 {isProcessing ? 'Translating...' : 'Translation will appear here'}

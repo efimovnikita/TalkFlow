@@ -12,15 +12,19 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg'],
+      includeAssets: ['favicon.svg', 'icons.svg', 'icon-512.png'],
       workbox: {
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024 // 15MB to cover the WASM file
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024, // 15MB to cover the WASM file
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm,onnx}']
       },
       manifest: {
         name: 'TalkFlow - Voice Translator',
         short_name: 'TalkFlow',
-        description: 'Real-time voice-to-voice translation app mimicking Google Translate Conversation mode.',
-        theme_color: '#ffffff',
+        description: 'Real-time voice-to-voice translation app.',
+        theme_color: '#2563eb',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'favicon.svg',
@@ -28,10 +32,16 @@ export default defineConfig({
             type: 'image/svg+xml'
           },
           {
-            src: 'icons.svg',
+            src: 'icon-512.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

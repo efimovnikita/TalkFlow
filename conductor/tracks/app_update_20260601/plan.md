@@ -1,8 +1,8 @@
 # Implementation Plan: App Update Notification
 
-## Phase 1: PWA Configuration Update
+## Phase 1: PWA Configuration Update [checkpoint: ecd7345]
 - [x] Task: Update `vite.config.ts` to change the PWA `registerType` from `autoUpdate` to `prompt`. (b54e757)
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: PWA Configuration Update' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: PWA Configuration Update' (Protocol in workflow.md) (ecd7345)
 
 ## Phase 2: Update Detection and UI Implementation
 - [ ] Task: Create a new component `UpdateModal.tsx` for the mandatory update dialog.

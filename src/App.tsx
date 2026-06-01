@@ -42,8 +42,9 @@ function App() {
       
       if (!text) {
          setRussianText('No speech detected.');
-         if (isVADMode) setVadStatus('listening');
-         return;
+         // Using a functional update or checking the latest state is tricky here
+         // We'll rely on the ref-based calling from the VAD listener
+         return ''; 
       }
       
       setRussianText(text)
@@ -68,26 +69,24 @@ function App() {
         setLastAudioUrl(audioUrl)
         
         const audio = new Audio(audioUrl)
-        audio.onended = () => {
-          if (isVADMode) {
-            setVadStatus('listening')
-            audioService.playChime('start')
-          } else {
-            setVadStatus('idle')
+        return new Promise<void>((resolve) => {
+          audio.onended = () => {
+            resolve();
           }
-        }
-        await audio.play()
-        console.log('Playback started.');
+          audio.play().catch(e => {
+            console.error('Playback error:', e);
+            resolve();
+          });
+        });
       }
     } catch (e: any) {
       console.error('Error in processing:', e);
       alert('Error: ' + e.message)
       setRussianText('Process failed.')
-      if (isVADMode) setVadStatus('listening')
     } finally {
       setIsProcessing(false)
     }
-  }, [settings, isVADMode, lastAudioUrl]);
+  }, [settings, lastAudioUrl]);
 
   const toggleRecording = async () => {
     if (isRecording) {
@@ -140,6 +139,10 @@ function App() {
           setVadStatus('transcribing')
           audioService.playChime('stop')
           await processAudio(blob)
+          
+          // Re-enable listening after processing/playback
+          setVadStatus('listening')
+          audioService.playChime('start')
         }
       )
     }

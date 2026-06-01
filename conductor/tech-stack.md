@@ -9,7 +9,7 @@
 - **Speech-to-Text (STT)**: Mistral AI (`voxtral-mini-latest`) - For transcribing Russian speech using offline `multipart/form-data` uploads.
 - **Translation**: Google Cloud Translation API - For translating between Russian, English, and Italian.
 - **Text-to-Speech (TTS)**: Mistral AI (`voxtral-mini-tts-2603`) - For high-quality target language synthesis using `@mistralai/mistralai` SDK with streaming support.
-- **Audio Capture**: Browser Native `MediaRecorder` API (Manual Mode) with device selection support, replacing automated VAD for better cross-browser reliability.
+- **Audio Capture**: Browser Native `MediaRecorder` API with custom `AudioWorklet` for Voice Activity Detection (VAD). This replaces the manual MediaRecorder mode with an automated, volume-threshold-based listening loop.
 
 ## Data & State
 - **Persistence**: Browser Local Storage - For storing API keys, user preferences (voices), and settings securely on the client side.

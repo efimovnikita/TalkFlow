@@ -135,6 +135,27 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+              <span>Speech Sensitivity</span>
+              <span className="text-gray-400 font-normal">{(100 - localSettings.vadThreshold * 1000).toFixed(0)}%</span>
+            </label>
+            <input
+              type="range"
+              name="vadThreshold"
+              min="0.001"
+              max="0.05"
+              step="0.001"
+              value={localSettings.vadThreshold}
+              onChange={(e) => setLocalSettings(prev => ({ ...prev, vadThreshold: parseFloat(e.target.value) }))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <span>MORE SENSITIVE</span>
+              <span>LESS SENSITIVE</span>
+            </div>
+          </div>
           
           <div className="pt-4 border-t flex space-x-3">
             <button

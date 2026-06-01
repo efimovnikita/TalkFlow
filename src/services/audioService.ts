@@ -4,6 +4,7 @@ export class AudioService {
   private stream: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
   private vadNode: AudioWorkletNode | null = null;
+  private isVADActive: boolean = false;
 
   async requestPermission(deviceId?: string): Promise<boolean> {
     try {
@@ -75,7 +76,7 @@ export class AudioService {
     });
   }
 
-  async initVAD(onSpeechStart: () => void, onSpeechEnd: (blob: Blob) => void) {
+  async initVAD(onSpeechStart: () => void, onSpeechEnd: (blob: Blob) => void, threshold: number = 0.02) {
     if (!this.stream) {
       const permitted = await this.requestPermission();
       if (!permitted) return;
@@ -89,17 +90,23 @@ export class AudioService {
       await this.audioContext.resume();
     }
 
-    await this.audioContext.audioWorklet.addModule('/volume-processor.js');
+    // Use a relative path to account for the project's base URL (/TalkFlow/)
+    await this.audioContext.audioWorklet.addModule('volume-processor.js');
 
+    this.isVADActive = true;
     const source = this.audioContext.createMediaStreamSource(this.stream!);
     this.vadNode = new AudioWorkletNode(this.audioContext, 'volume-processor');
+    this.vadNode.port.postMessage({ type: 'update_threshold', threshold });
 
     this.vadNode.port.onmessage = (event) => {
+      if (!this.isVADActive) return;
+
       if (event.data.type === 'speech_start') {
         onSpeechStart();
         this.startRecording();
       } else if (event.data.type === 'speech_end') {
         this.stopRecording().then(blob => {
+          if (!this.isVADActive) return;
           if (blob && blob.size > 0) {
             onSpeechEnd(blob);
           }
@@ -108,10 +115,40 @@ export class AudioService {
     };
 
     source.connect(this.vadNode);
-    console.log('VAD initialized');
+    console.log('VAD initialized with threshold:', threshold);
+  }
+
+  updateVADThreshold(threshold: number) {
+    if (this.vadNode) {
+      this.vadNode.port.postMessage({ type: 'update_threshold', threshold });
+    }
+  }
+
+  async playChime(type: 'start' | 'stop') {
+    if (!this.audioContext) {
+      this.audioContext = new AudioContext();
+    }
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+    const osc = this.audioContext.createOscillator();
+    const gain = this.audioContext.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(type === 'start' ? 880 : 440, this.audioContext.currentTime);
+    
+    gain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+    
+    osc.connect(gain);
+    gain.connect(this.audioContext.destination);
+    
+    osc.start();
+    osc.stop(this.audioContext.currentTime + 0.1);
   }
 
   stopVAD() {
+    this.isVADActive = false;
     if (this.vadNode) {
       this.vadNode.disconnect();
       this.vadNode = null;

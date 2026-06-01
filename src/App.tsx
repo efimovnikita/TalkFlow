@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
@@ -20,10 +20,15 @@ function App() {
   
   const [isVADMode, setIsVADMode] = useState(false)
   const [vadStatus, setVadStatus] = useState<VADStatus>('idle')
+  
+  // Use a ref to track the latest VAD mode state for callbacks
+  const isVADModeRef = useRef(isVADMode)
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
     saveSettings(newSettings)
+    // Update threshold if VAD is active
+    audioService.updateVADThreshold(newSettings.vadThreshold)
   }
 
   const handleReplayAudio = async () => {
@@ -34,6 +39,8 @@ function App() {
   }
 
   const processAudio = useCallback(async (audioBlob: Blob) => {
+    if (!isVADModeRef.current && !isRecording) return; // Check if we should still be processing
+
     try {
       setIsProcessing(true)
       setRussianText('Transcribing...')
@@ -42,17 +49,19 @@ function App() {
       
       if (!text) {
          setRussianText('No speech detected.');
-         // Using a functional update or checking the latest state is tricky here
-         // We'll rely on the ref-based calling from the VAD listener
-         return ''; 
+         return; 
       }
       
+      if (!isVADModeRef.current && !isRecording) return;
+
       setRussianText(text)
       setVadStatus('translating')
       setTranslatedText('Translating...')
       
       const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
       console.log('Translation result:', translation);
+      
+      if (!isVADModeRef.current && !isRecording) return;
       setTranslatedText(translation)
       
       if (translation) {
@@ -61,6 +70,8 @@ function App() {
         console.log('Synthesizing speech...');
         const ttsBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
         
+        if (!isVADModeRef.current && !isRecording) return;
+
         if (lastAudioUrl) {
           URL.revokeObjectURL(lastAudioUrl)
         }
@@ -86,7 +97,7 @@ function App() {
     } finally {
       setIsProcessing(false)
     }
-  }, [settings, lastAudioUrl]);
+  }, [settings, isRecording, lastAudioUrl]);
 
   const toggleRecording = async () => {
     if (isRecording) {
@@ -114,6 +125,7 @@ function App() {
 
   const toggleVADMode = async () => {
     if (isVADMode) {
+      isVADModeRef.current = false
       audioService.stopVAD()
       setIsVADMode(false)
       setVadStatus('idle')
@@ -124,6 +136,7 @@ function App() {
         return
       }
       
+      isVADModeRef.current = true
       setIsVADMode(true)
       setVadStatus('listening')
       setRussianText('')
@@ -132,18 +145,22 @@ function App() {
       
       await audioService.initVAD(
         () => {
+          if (!isVADModeRef.current) return
           setVadStatus('listening')
           audioService.playChime('start')
         },
         async (blob) => {
+          if (!isVADModeRef.current) return
           setVadStatus('transcribing')
           audioService.playChime('stop')
           await processAudio(blob)
           
+          if (!isVADModeRef.current) return
           // Re-enable listening after processing/playback
           setVadStatus('listening')
           audioService.playChime('start')
-        }
+        },
+        settings.vadThreshold
       )
     }
   }

@@ -4,6 +4,7 @@ export interface Settings {
   mistralVoice: string;
   targetLanguage: string;
   microphoneDeviceId: string;
+  vadThreshold: number;
 }
 
 const STORAGE_KEY = 'talkflow_settings';
@@ -14,6 +15,7 @@ const DEFAULT_SETTINGS: Settings = {
   mistralVoice: 'voice1',
   targetLanguage: 'en',
   microphoneDeviceId: '',
+  vadThreshold: 0.02,
 };
 
 export const loadSettings = (): Settings => {

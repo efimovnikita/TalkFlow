@@ -2,9 +2,15 @@ class VolumeProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this.isSpeaking = false;
-    this.threshold = 0.02; // RMS threshold for speech detection
+    this.threshold = 0.02; // Reverted to 0.02
     this.silenceDuration = 1.0; // Seconds of silence before speech_end
     this.lastSpeechFrame = 0;
+
+    this.port.onmessage = (event) => {
+      if (event.data.type === 'update_threshold') {
+        this.threshold = event.data.threshold;
+      }
+    };
   }
 
   process(inputs, outputs, parameters) {

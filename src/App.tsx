@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import SettingsPanel from './components/SettingsPanel'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
@@ -6,6 +6,8 @@ import { audioService } from './services/audioService'
 import { transcribeSpeech, synthesizeSpeech } from './services/mistralService'
 import { translateText } from './services/translationService'
 import './App.css'
+
+type VADStatus = 'idle' | 'listening' | 'transcribing' | 'translating' | 'speaking';
 
 function App() {
   const [settings, setSettings] = useState<Settings>(loadSettings())
@@ -15,6 +17,9 @@ function App() {
   const [translatedText, setTranslatedText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [lastAudioUrl, setLastAudioUrl] = useState<string | null>(null)
+  
+  const [isVADMode, setIsVADMode] = useState(false)
+  const [vadStatus, setVadStatus] = useState<VADStatus>('idle')
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
@@ -28,63 +33,70 @@ function App() {
     }
   }
 
+  const processAudio = useCallback(async (audioBlob: Blob) => {
+    try {
+      setIsProcessing(true)
+      setRussianText('Transcribing...')
+      const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
+      console.log('Transcription result:', text);
+      
+      if (!text) {
+         setRussianText('No speech detected.');
+         if (isVADMode) setVadStatus('listening');
+         return;
+      }
+      
+      setRussianText(text)
+      setVadStatus('translating')
+      setTranslatedText('Translating...')
+      
+      const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
+      console.log('Translation result:', translation);
+      setTranslatedText(translation)
+      
+      if (translation) {
+        setVadStatus('speaking')
+        setTranslatedText(translation + ' 🔊')
+        console.log('Synthesizing speech...');
+        const ttsBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
+        
+        if (lastAudioUrl) {
+          URL.revokeObjectURL(lastAudioUrl)
+        }
+        
+        const audioUrl = URL.createObjectURL(ttsBlob)
+        setLastAudioUrl(audioUrl)
+        
+        const audio = new Audio(audioUrl)
+        audio.onended = () => {
+          if (isVADMode) {
+            setVadStatus('listening')
+            audioService.playChime('start')
+          } else {
+            setVadStatus('idle')
+          }
+        }
+        await audio.play()
+        console.log('Playback started.');
+      }
+    } catch (e: any) {
+      console.error('Error in processing:', e);
+      alert('Error: ' + e.message)
+      setRussianText('Process failed.')
+      if (isVADMode) setVadStatus('listening')
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [settings, isVADMode, lastAudioUrl]);
+
   const toggleRecording = async () => {
-    console.log('Toggle recording button clicked. isRecording:', isRecording);
     if (isRecording) {
       setIsProcessing(true)
-      console.log('Stopping recording...');
       const audioBlob = await audioService.stopRecording()
       setIsRecording(false)
-      
       if (audioBlob) {
-        console.log('Audio blob captured. Size:', audioBlob.size);
-        
-        try {
-          setRussianText('Transcribing...')
-          const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
-          console.log('Transcription result:', text);
-          
-          if (!text) {
-             setRussianText('No speech detected.');
-             return;
-          }
-          
-          setRussianText(text)
-          
-          if (text) {
-            setTranslatedText('Translating...')
-            const translation = await translateText(text, settings.targetLanguage, settings.googleApiKey)
-            console.log('Translation result:', translation);
-            setTranslatedText(translation)
-            
-            if (translation) {
-              setTranslatedText(translation + ' 🔊')
-              console.log('Synthesizing speech...');
-              const audioBlob = await synthesizeSpeech(translation, settings.mistralVoice, settings.mistralApiKey)
-              console.log('Synthesis complete. Blob ready.');
-              
-              // Clean up old URL
-              if (lastAudioUrl) {
-                URL.revokeObjectURL(lastAudioUrl)
-              }
-              
-              const audioUrl = URL.createObjectURL(audioBlob)
-              setLastAudioUrl(audioUrl)
-              
-              const audio = new Audio(audioUrl)
-              await audio.play()
-              console.log('Playback started.');
-            }
-          }
-        } catch (e: any) {
-          console.error('Error in translation loop:', e);
-          alert('Error: ' + e.message)
-          setRussianText('Process failed.')
-        } finally {
-          setIsProcessing(false)
-        }
+        await processAudio(audioBlob)
       } else {
-        console.warn('No audio blob captured.');
         setIsProcessing(false)
       }
     } else {
@@ -101,21 +113,73 @@ function App() {
     }
   }
 
+  const toggleVADMode = async () => {
+    if (isVADMode) {
+      audioService.stopVAD()
+      setIsVADMode(false)
+      setVadStatus('idle')
+    } else {
+      const hasPermission = await audioService.requestPermission(settings.microphoneDeviceId)
+      if (!hasPermission) {
+        alert('Microphone permission is required.')
+        return
+      }
+      
+      setIsVADMode(true)
+      setVadStatus('listening')
+      setRussianText('')
+      setTranslatedText('')
+      audioService.playChime('start')
+      
+      await audioService.initVAD(
+        () => {
+          setVadStatus('listening')
+          audioService.playChime('start')
+        },
+        async (blob) => {
+          setVadStatus('transcribing')
+          audioService.playChime('stop')
+          await processAudio(blob)
+        }
+      )
+    }
+  }
+
   return (
     <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center z-10 relative">
         <h1 className="text-xl font-bold text-blue-600">TalkFlow</h1>
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* VAD Toggle */}
+          <button
+            onClick={toggleVADMode}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              isVADMode ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'
+            }`}
+          >
+            <div className={`w-2 h-2 rounded-full ${isVADMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+            {isVADMode ? 'Auto-Listen ON' : 'Auto-Listen OFF'}
+          </button>
+          
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
       </header>
+
+      {/* Status Bar */}
+      {isVADMode && (
+        <div className="bg-blue-600 text-white text-xs font-bold py-1 px-4 text-center uppercase tracking-widest animate-in fade-in slide-in-from-top-1 duration-300">
+          Status: {vadStatus}
+        </div>
+      )}
 
       {/* Main Content (Split Screen) */}
       <main className="flex-1 flex flex-col min-h-0">
@@ -129,7 +193,7 @@ function App() {
               <p className="text-2xl text-gray-800 w-full">{russianText}</p>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
-                {isRecording ? 'Listening...' : 'Tap microphone to start speaking...'}
+                {isRecording || (isVADMode && vadStatus === 'listening') ? 'Listening...' : 'Tap microphone to start speaking...'}
               </p>
             )}
           </div>
@@ -161,7 +225,7 @@ function App() {
               </>
             ) : (
               <p className="text-2xl text-gray-300 italic text-center w-full">
-                {isProcessing ? 'Translating...' : 'Translation will appear here'}
+                {isProcessing ? 'Processing...' : 'Translation will appear here'}
               </p>
             )}
           </div>
@@ -170,21 +234,37 @@ function App() {
 
       {/* Footer / Microphone Button */}
       <footer className="p-6 bg-white border-t flex justify-center z-10 relative">
-        <button 
-          onClick={toggleRecording}
-          disabled={isProcessing}
-          className={`${
-            isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600'
-          } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''} text-white p-8 rounded-full shadow-lg hover:opacity-90 transition-all transform active:scale-95`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {isRecording ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            )}
-          </svg>
-        </button>
+        {!isVADMode ? (
+          <button 
+            onClick={toggleRecording}
+            disabled={isProcessing}
+            className={`${
+              isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600'
+            } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''} text-white p-8 rounded-full shadow-lg hover:opacity-90 transition-all transform active:scale-95`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {isRecording ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              )}
+            </svg>
+          </button>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <div className={`p-4 rounded-xl font-bold uppercase tracking-widest text-sm ${
+              vadStatus === 'listening' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+            }`}>
+              {vadStatus}
+            </div>
+            <button
+              onClick={toggleVADMode}
+              className="text-gray-500 text-xs underline"
+            >
+              Stop Auto-Listening
+            </button>
+          </div>
+        )}
       </footer>
 
       {/* Settings Modal */}

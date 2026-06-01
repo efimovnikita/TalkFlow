@@ -4,6 +4,6 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: App Update Notification**
+- [x] **Track: App Update Notification**
 *Link: [./tracks/app_update_20260601/](./tracks/app_update_20260601/)*
 

@@ -22,4 +22,4 @@
 - [x] Task: Sequence the steps: Trigger VAD -> On speech end, call Mistral STT -> Google Translate -> Mistral TTS. (ee3d51c)
 - [x] Task: Wire the end of Mistral TTS playback to automatically trigger the "start listening" chime and re-enable VAD. (ee3d51c)
 - [x] Task: Update `tech-stack.md` to reflect the addition of the custom AudioWorklet for VAD, replacing manual MediaRecorder. (ee3d51c)
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Continuous Loop Logic' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Continuous Loop Logic' (Protocol in workflow.md) (e6fed4f)

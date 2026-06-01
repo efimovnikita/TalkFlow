@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons.svg', 'icon-512.png'],
       workbox: {
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024, // 15MB to cover the WASM file

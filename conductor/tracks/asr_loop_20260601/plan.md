@@ -18,8 +18,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: UI Feedback and Chimes' (Protocol in workflow.md) (01660ba)
 
 ## Phase 4: Continuous Loop Logic
-- [ ] Task: Implement the "Full Auto-Loop" control flow in the main application logic.
-- [ ] Task: Sequence the steps: Trigger VAD -> On speech end, call Mistral STT -> Google Translate -> Mistral TTS.
-- [ ] Task: Wire the end of Mistral TTS playback to automatically trigger the "start listening" chime and re-enable VAD.
-- [ ] Task: Update `tech-stack.md` to reflect the addition of the custom AudioWorklet for VAD, replacing manual MediaRecorder.
+- [x] Task: Implement the "Full Auto-Loop" control flow in the main application logic. (ee3d51c)
+- [x] Task: Sequence the steps: Trigger VAD -> On speech end, call Mistral STT -> Google Translate -> Mistral TTS. (ee3d51c)
+- [x] Task: Wire the end of Mistral TTS playback to automatically trigger the "start listening" chime and re-enable VAD. (ee3d51c)
+- [x] Task: Update `tech-stack.md` to reflect the addition of the custom AudioWorklet for VAD, replacing manual MediaRecorder. (ee3d51c)
 - [ ] Task: Conductor - User Manual Verification 'Phase 4: Continuous Loop Logic' (Protocol in workflow.md)

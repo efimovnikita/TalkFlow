@@ -295,6 +295,11 @@ function App() {
           onClose={() => setIsSettingsOpen(false)}
         />
       )}
+
+      {/* App Update Modal */}
+      {needRefresh && (
+        <UpdateModal onUpdate={() => updateServiceWorker(true)} />
+      )}
     </div>
   )
 }

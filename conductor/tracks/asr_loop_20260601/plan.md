@@ -1,8 +1,8 @@
 # Implementation Plan: Automatic Speech Recognition (ASR) Loop
 
 ## Phase 1: VAD AudioWorklet Implementation
-- [ ] Task: Create `volume-processor.js` (AudioWorklet) for volume thresholding and silence detection.
-- [ ] Task: Implement message passing to send "speech_start" and "speech_end" events to the main thread.
+- [x] Task: Create `volume-processor.js` (AudioWorklet) for volume thresholding and silence detection. (0e45552)
+- [x] Task: Implement message passing to send "speech_start" and "speech_end" events to the main thread. (0e45552)
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: VAD AudioWorklet Implementation' (Protocol in workflow.md)
 
 ## Phase 2: Audio Service Integration

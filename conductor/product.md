@@ -19,6 +19,7 @@ Provide a seamless, low-latency "talk and listen" experience for Russian speaker
 - **Voice Synthesis**: Generate high-quality audio in the target language using Mistral Text-to-Speech.
 - **Voice Activity Detection (VAD)**: Automatically detect when the user starts and stops speaking to trigger the translation cycle without manual button presses.
 - **Language Selection**: Toggle between English and Italian as target languages.
+- **Update Notifications**: Automatically prompt the user to update the app when a new version is published.
 
 ## Non-Functional Requirements
 - **PWA Capabilities**: Built as a Progressive Web App for easy access across devices with a "native-like" experience.

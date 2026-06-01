@@ -5,11 +5,11 @@
 - [x] Task: Implement message passing to send "speech_start" and "speech_end" events to the main thread. (0e45552)
 - [x] Task: Conductor - User Manual Verification 'Phase 1: VAD AudioWorklet Implementation' (Protocol in workflow.md) (0d5f47d)
 
-## Phase 2: Audio Service Integration
+## Phase 2: Audio Service Integration [checkpoint: 45b3b5d]
 - [x] Task: Update `audioService.ts` to load the `volume-processor` worklet and manage the audio graph. (93e1f51)
 - [x] Task: Implement logic to capture audio chunks only during active speech (between "speech_start" and "speech_end" events). (93e1f51)
 - [x] Task: Add methods to start and stop the continuous VAD listening mode. (93e1f51)
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Audio Service Integration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Audio Service Integration' (Protocol in workflow.md) (45b3b5d)
 
 ## Phase 3: UI Feedback and Chimes
 - [ ] Task: Add logic to play audio chimes (start and stop beeps) using the Web Audio API.

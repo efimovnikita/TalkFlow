@@ -11,11 +11,11 @@
 - [x] Task: Add methods to start and stop the continuous VAD listening mode. (93e1f51)
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Audio Service Integration' (Protocol in workflow.md) (45b3b5d)
 
-## Phase 3: UI Feedback and Chimes
+## Phase 3: UI Feedback and Chimes [checkpoint: 01660ba]
 - [x] Task: Add logic to play audio chimes (start and stop beeps) using the Web Audio API. (93e1f51)
 - [x] Task: Update the main application state to track "Listening", "Transcribing", "Translating", and "Speaking" phases. (86a38d4)
 - [x] Task: Update `App.tsx` to display the new visual state indicators and provide a toggle for "Listening Mode". (86a38d4)
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: UI Feedback and Chimes' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: UI Feedback and Chimes' (Protocol in workflow.md) (01660ba)
 
 ## Phase 4: Continuous Loop Logic
 - [ ] Task: Implement the "Full Auto-Loop" control flow in the main application logic.

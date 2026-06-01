@@ -5,6 +5,7 @@ export class AudioService {
   private audioContext: AudioContext | null = null;
   private vadNode: AudioWorkletNode | null = null;
   private isVADActive: boolean = false;
+  private isVADPaused: boolean = false;
 
   async requestPermission(deviceId?: string): Promise<boolean> {
     try {
@@ -76,7 +77,7 @@ export class AudioService {
     });
   }
 
-  async initVAD(onSpeechStart: () => void, onSpeechEnd: (blob: Blob) => void, threshold: number = 0.02) {
+  async initVAD(onSpeechStart: () => void, onSpeechEnd: (blob: Blob) => void, threshold: number = 0.02, silenceDuration: number = 2.0) {
     if (!this.stream) {
       const permitted = await this.requestPermission();
       if (!permitted) return;
@@ -97,9 +98,10 @@ export class AudioService {
     const source = this.audioContext.createMediaStreamSource(this.stream!);
     this.vadNode = new AudioWorkletNode(this.audioContext, 'volume-processor');
     this.vadNode.port.postMessage({ type: 'update_threshold', threshold });
+    this.vadNode.port.postMessage({ type: 'update_silence_duration', silenceDuration });
 
     this.vadNode.port.onmessage = (event) => {
-      if (!this.isVADActive) return;
+      if (!this.isVADActive || this.isVADPaused) return;
 
       if (event.data.type === 'speech_start') {
         onSpeechStart();
@@ -122,6 +124,17 @@ export class AudioService {
     if (this.vadNode) {
       this.vadNode.port.postMessage({ type: 'update_threshold', threshold });
     }
+  }
+
+  updateVADSilenceDuration(silenceDuration: number) {
+    if (this.vadNode) {
+      this.vadNode.port.postMessage({ type: 'update_silence_duration', silenceDuration });
+    }
+  }
+
+  setVADPaused(paused: boolean) {
+    this.isVADPaused = paused;
+    console.log(`VAD ${paused ? 'paused' : 'resumed'}`);
   }
 
   async playChime(type: 'start' | 'stop') {

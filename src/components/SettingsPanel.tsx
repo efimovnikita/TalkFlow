@@ -156,6 +156,27 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
               <span>LESS SENSITIVE</span>
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+              <span>Pause Duration</span>
+              <span className="text-gray-400 font-normal">{localSettings.vadSilenceDuration.toFixed(1)}s</span>
+            </label>
+            <input
+              type="range"
+              name="vadSilenceDuration"
+              min="0.5"
+              max="5.0"
+              step="0.1"
+              value={localSettings.vadSilenceDuration}
+              onChange={(e) => setLocalSettings(prev => ({ ...prev, vadSilenceDuration: parseFloat(e.target.value) }))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <span>FAST</span>
+              <span>SLOW</span>
+            </div>
+          </div>
           
           <div className="pt-4 border-t flex space-x-3">
             <button

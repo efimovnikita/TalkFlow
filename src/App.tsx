@@ -34,8 +34,9 @@ function App() {
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
     saveSettings(newSettings)
-    // Update threshold if VAD is active
+    // Update threshold and silence duration if VAD is active
     audioService.updateVADThreshold(newSettings.vadThreshold)
+    audioService.updateVADSilenceDuration(newSettings.vadSilenceDuration)
   }
 
   const handleReplayAudio = async () => {
@@ -49,6 +50,7 @@ function App() {
     if (!isVADModeRef.current && !isRecording) return; // Check if we should still be processing
 
     try {
+      audioService.setVADPaused(true)
       setIsProcessing(true)
       setRussianText('Transcribing...')
       const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
@@ -56,6 +58,7 @@ function App() {
       
       if (!text) {
          setRussianText('No speech detected.');
+         audioService.setVADPaused(false)
          return; 
       }
       
@@ -87,7 +90,7 @@ function App() {
         setLastAudioUrl(audioUrl)
         
         const audio = new Audio(audioUrl)
-        return new Promise<void>((resolve) => {
+        await new Promise<void>((resolve) => {
           audio.onended = () => {
             resolve();
           }
@@ -103,6 +106,7 @@ function App() {
       setRussianText('Process failed.')
     } finally {
       setIsProcessing(false)
+      audioService.setVADPaused(false)
     }
   }, [settings, isRecording, lastAudioUrl]);
 
@@ -134,6 +138,7 @@ function App() {
     if (isVADMode) {
       isVADModeRef.current = false
       audioService.stopVAD()
+      audioService.setVADPaused(false) // Just in case it was paused
       setIsVADMode(false)
       setVadStatus('idle')
     } else {
@@ -148,26 +153,23 @@ function App() {
       setVadStatus('listening')
       setRussianText('')
       setTranslatedText('')
-      audioService.playChime('start')
       
       await audioService.initVAD(
         () => {
           if (!isVADModeRef.current) return
           setVadStatus('listening')
-          audioService.playChime('start')
         },
         async (blob) => {
           if (!isVADModeRef.current) return
           setVadStatus('transcribing')
-          audioService.playChime('stop')
           await processAudio(blob)
           
           if (!isVADModeRef.current) return
           // Re-enable listening after processing/playback
           setVadStatus('listening')
-          audioService.playChime('start')
         },
-        settings.vadThreshold
+        settings.vadThreshold,
+        settings.vadSilenceDuration
       )
     }
   }

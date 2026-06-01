@@ -9,6 +9,8 @@ class VolumeProcessor extends AudioWorkletProcessor {
     this.port.onmessage = (event) => {
       if (event.data.type === 'update_threshold') {
         this.threshold = event.data.threshold;
+      } else if (event.data.type === 'update_silence_duration') {
+        this.silenceDuration = event.data.silenceDuration;
       }
     };
   }

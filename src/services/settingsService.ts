@@ -5,6 +5,7 @@ export interface Settings {
   targetLanguage: string;
   microphoneDeviceId: string;
   vadThreshold: number;
+  vadSilenceDuration: number;
 }
 
 const STORAGE_KEY = 'talkflow_settings';
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS: Settings = {
   targetLanguage: 'en',
   microphoneDeviceId: '',
   vadThreshold: 0.02,
+  vadSilenceDuration: 2.0,
 };
 
 export const loadSettings = (): Settings => {

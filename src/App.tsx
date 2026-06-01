@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
+import { useRegisterSW } from 'virtual:pwa-register/react'
 import SettingsPanel from './components/SettingsPanel'
+import UpdateModal from './components/UpdateModal'
 import { loadSettings, saveSettings } from './services/settingsService'
 import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
@@ -10,6 +12,11 @@ import './App.css'
 type VADStatus = 'idle' | 'listening' | 'transcribing' | 'translating' | 'speaking';
 
 function App() {
+  const {
+    needRefresh: [needRefresh, _setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW()
+
   const [settings, setSettings] = useState<Settings>(loadSettings())
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isRecording, setIsRecording] = useState(false)

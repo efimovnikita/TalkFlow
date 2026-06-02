@@ -120,6 +120,57 @@ function App() {
     }
   }, [settings, lastAudioUrl]);
 
+  // Keep VAD callbacks up-to-date to avoid stale closures with settings/processAudio
+  const onSpeechStartRef = useRef<() => void>(() => {})
+  const onSpeechEndRef = useRef<(blob: Blob) => Promise<void>>(async () => {})
+
+  onSpeechStartRef.current = () => {
+    if (!isVADModeRef.current) return
+    setVadStatus('listening')
+    setRussianText('')
+    realtimeTextRef.current = ''
+    
+    // Connect to Mistral Realtime
+    const service = new MistralRealtimeService(
+      settings.mistralApiKey,
+      (text) => {
+        if (text) {
+          setRussianText(prev => {
+            const newText = prev + text
+            realtimeTextRef.current = newText
+            return newText
+          })
+        }
+      },
+      (error) => {
+        console.error('Realtime transcription error:', error)
+      },
+      'voxtral-mini-transcribe-realtime-2602',
+      settings.mistralProxyUrl
+    )
+    
+    realtimeServiceRef.current = service
+    service.connect().catch(e => {
+      console.error('Failed to connect to realtime service:', e)
+    })
+  }
+
+  onSpeechEndRef.current = async (blob) => {
+    if (!isVADModeRef.current) return
+    
+    if (realtimeServiceRef.current) {
+      realtimeServiceRef.current.disconnect()
+      realtimeServiceRef.current = null
+    }
+
+    setVadStatus('transcribing')
+    await processAudio(blob)
+    
+    if (!isVADModeRef.current) return
+    // Re-enable listening after processing/playback
+    setVadStatus('listening')
+  }
+
 
 
   const toggleVADMode = async () => {
@@ -157,51 +208,8 @@ function App() {
       realtimeTextRef.current = ''
       
       await audioService.initVAD(
-        () => {
-          if (!isVADModeRef.current) return
-          setVadStatus('listening')
-          setRussianText('')
-          realtimeTextRef.current = ''
-          
-          // Connect to Mistral Realtime
-          const service = new MistralRealtimeService(
-            settings.mistralApiKey,
-            (text) => {
-              if (text) {
-                setRussianText(prev => {
-                  const newText = prev + text
-                  realtimeTextRef.current = newText
-                  return newText
-                })
-              }
-            },
-            (error) => {
-              console.error('Realtime transcription error:', error)
-            },
-            'voxtral-mini-transcribe-realtime-2602',
-            settings.mistralProxyUrl
-          )
-          
-          realtimeServiceRef.current = service
-          service.connect().catch(e => {
-            console.error('Failed to connect to realtime service:', e)
-          })
-        },
-        async (blob) => {
-          if (!isVADModeRef.current) return
-          
-          if (realtimeServiceRef.current) {
-            realtimeServiceRef.current.disconnect()
-            realtimeServiceRef.current = null
-          }
-
-          setVadStatus('transcribing')
-          await processAudio(blob)
-          
-          if (!isVADModeRef.current) return
-          // Re-enable listening after processing/playback
-          setVadStatus('listening')
-        },
+        () => onSpeechStartRef.current(),
+        async (blob) => onSpeechEndRef.current(blob),
         settings.vadThreshold,
         settings.vadSilenceDuration,
         (samples) => {

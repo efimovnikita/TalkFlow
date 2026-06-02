@@ -7,6 +7,7 @@ export interface Settings {
   vadThreshold: number;
   vadSilenceDuration: number;
   mistralProxyUrl: string;
+  darkMode: boolean;
 }
 
 const STORAGE_KEY = 'talkflow_settings';
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: Settings = {
   vadThreshold: 0.02,
   vadSilenceDuration: 2.0,
   mistralProxyUrl: '',
+  darkMode: false,
 };
 
 export const loadSettings = (): Settings => {

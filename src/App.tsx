@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import SettingsPanel from './components/SettingsPanel'
 import UpdateModal from './components/UpdateModal'
@@ -33,6 +33,10 @@ function App() {
   const isVADModeRef = useRef(isVADMode)
   const realtimeServiceRef = useRef<MistralRealtimeService | null>(null)
   const realtimeTextRef = useRef('')
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', settings.darkMode);
+  }, [settings.darkMode]);
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
@@ -222,14 +226,14 @@ function App() {
   }
 
   return (
-    <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200 flex flex-col overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm p-2 md:p-4 flex justify-between items-center z-10 relative">
-        <h1 className="text-lg md:text-xl font-bold text-blue-600">TalkFlow</h1>
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800/80 shadow-sm p-2 md:p-4 flex justify-between items-center z-10 relative">
+        <h1 className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-500">TalkFlow</h1>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="p-1.5 md:p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1.5 md:p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
@@ -243,9 +247,9 @@ function App() {
       {/* Main Content (Split Screen) */}
       <main className="flex-1 flex flex-col min-h-0">
         {/* Top: Russian Source */}
-        <div className="flex-1 bg-white flex flex-col border-b min-h-0">
-          <div className="px-3 py-1 md:p-4 bg-white/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
-            <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Russian</span>
+        <div className="flex-1 bg-white dark:bg-gray-900 flex flex-col border-b border-gray-100 dark:border-gray-800/80 min-h-0">
+          <div className="px-3 py-1 md:p-4 bg-white/90 dark:bg-gray-900/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
+            <span className="text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Russian</span>
           </div>
           <div className={`flex-1 flex flex-col min-h-0 w-full ${russianText ? 'px-4 pb-2 md:px-6 md:pb-6 pt-1 md:pt-2 justify-start items-start' : 'p-4 md:p-6 justify-center items-center'}`}>
             {russianText ? (
@@ -253,10 +257,10 @@ function App() {
                 text={russianText} 
                 maxFontSizeRem={1.5} 
                 minFontSizeRem={0.875} 
-                color="text-gray-800"
+                color="text-gray-800 dark:text-gray-100"
               />
             ) : (
-              <p className="text-xl md:text-2xl text-gray-300 italic text-center w-full">
+              <p className="text-xl md:text-2xl text-gray-300 dark:text-gray-700 italic text-center w-full">
                 {isVADMode && vadStatus === 'listening' ? 'Listening...' : 'Tap microphone to start Auto-listening...'}
               </p>
             )}
@@ -264,9 +268,9 @@ function App() {
         </div>
 
         {/* Bottom: Target Translation */}
-        <div className="flex-1 bg-gray-50 flex flex-col min-h-0">
-          <div className="px-3 py-1 md:p-4 bg-gray-50/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
-            <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">
+        <div className="flex-1 bg-gray-50 dark:bg-gray-950 flex flex-col min-h-0">
+          <div className="px-3 py-1 md:p-4 bg-gray-50/90 dark:bg-gray-950/90 sticky top-0 backdrop-blur-sm z-10 shrink-0">
+            <span className="text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               {settings.targetLanguage === 'en' ? 'English' : 'Italian'}
             </span>
           </div>
@@ -276,12 +280,12 @@ function App() {
                 text={translatedText} 
                 maxFontSizeRem={1.5} 
                 minFontSizeRem={0.875} 
-                color="text-blue-600"
+                color="text-blue-600 dark:text-blue-400"
                 fontWeight="font-medium"
                 suffix={lastAudioUrl && (
                   <button
                     onClick={handleReplayAudio}
-                    className="p-1 md:p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors inline-flex items-center shadow-sm"
+                    className="p-1 md:p-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors inline-flex items-center shadow-sm"
                     title="Replay Audio"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -291,7 +295,7 @@ function App() {
                 )}
               />
             ) : (
-              <p className="text-xl md:text-2xl text-gray-300 italic text-center w-full">
+              <p className="text-xl md:text-2xl text-gray-300 dark:text-gray-700 italic text-center w-full">
                 {isProcessing ? 'Processing...' : 'Translation will appear here'}
               </p>
             )}
@@ -300,13 +304,13 @@ function App() {
       </main>
 
       {/* Footer / Auto-Listen Button */}
-      <footer className="p-2 md:p-4 bg-white border-t grid grid-cols-3 items-center z-10 relative">
+      <footer className="p-2 md:p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 grid grid-cols-3 items-center z-10 relative">
         <div className="flex justify-end pr-2 md:pr-4">
           {isVADMode && (
             <div className={`px-3 py-1 rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs border ${
               vadStatus === 'listening' 
-                ? 'bg-green-50 text-green-700 border-green-200 animate-pulse' 
-                : 'bg-blue-50 text-blue-700 border-blue-200'
+                ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50 animate-pulse' 
+                : 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'
             }`}>
               {vadStatus}
             </div>

@@ -44,8 +44,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
   }, [localSettings.mistralApiKey]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setLocalSettings(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setLocalSettings(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setLocalSettings(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,60 +61,60 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-          <h2 className="text-xl font-semibold text-gray-800">Settings</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+      <div className="bg-white dark:bg-gray-900 dark:border dark:border-gray-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Settings</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto bg-white dark:bg-gray-900">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mistral API Key</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mistral API Key</label>
             <input
               type="password"
               name="mistralApiKey"
               value={localSettings.mistralApiKey}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               placeholder="Enter Mistral API Key"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mistral WebSocket Proxy URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mistral WebSocket Proxy URL</label>
             <input
               type="text"
               name="mistralProxyUrl"
               value={localSettings.mistralProxyUrl}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs transition-colors"
               placeholder="wss://<your-gcf-url>.a.run.app"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Google Translation API Key</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Google Translation API Key</label>
             <input
               type="password"
               name="googleApiKey"
               value={localSettings.googleApiKey}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               placeholder="Enter Google API Key"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mistral Voice</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mistral Voice</label>
             <select
               name="mistralVoice"
               value={localSettings.mistralVoice}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               disabled={isLoadingVoices}
             >
               <option value="azure">Azure (Default)</option>
@@ -117,16 +122,16 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
                 <option key={v.id} value={v.id}>{v.name}</option>
               ))}
             </select>
-            {isLoadingVoices && <p className="text-xs text-blue-500 mt-1">Loading voices...</p>}
+            {isLoadingVoices && <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">Loading voices...</p>}
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Target Language</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Language</label>
             <select
               name="targetLanguage"
               value={localSettings.targetLanguage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
             >
               <option value="en">English</option>
               <option value="it">Italian</option>
@@ -134,12 +139,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Microphone</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Microphone</label>
             <select
               name="microphoneDeviceId"
               value={localSettings.microphoneDeviceId}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
             >
               <option value="">Default Microphone</option>
               {availableMics.map(m => (
@@ -148,10 +153,24 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
             </select>
           </div>
 
+          <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-800">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Theme</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                name="darkMode"
+                checked={localSettings.darkMode}
+                onChange={handleChange}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
               <span>Speech Sensitivity</span>
-              <span className="text-gray-400 font-normal">{(100 - localSettings.vadThreshold * 1000).toFixed(0)}%</span>
+              <span className="text-gray-400 dark:text-gray-500 font-normal">{(100 - localSettings.vadThreshold * 1000).toFixed(0)}%</span>
             </label>
             <input
               type="range"
@@ -161,18 +180,18 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
               step="0.001"
               value={localSettings.vadThreshold}
               onChange={(e) => setLocalSettings(prev => ({ ...prev, vadThreshold: parseFloat(e.target.value) }))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />
-            <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+            <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
               <span>MORE SENSITIVE</span>
               <span>LESS SENSITIVE</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
               <span>Pause Duration</span>
-              <span className="text-gray-400 font-normal">{localSettings.vadSilenceDuration.toFixed(1)}s</span>
+              <span className="text-gray-400 dark:text-gray-500 font-normal">{localSettings.vadSilenceDuration.toFixed(1)}s</span>
             </label>
             <input
               type="range"
@@ -182,15 +201,15 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
               step="0.1"
               value={localSettings.vadSilenceDuration}
               onChange={(e) => setLocalSettings(prev => ({ ...prev, vadSilenceDuration: parseFloat(e.target.value) }))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />
-            <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+            <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mt-1">
               <span>FAST</span>
               <span>SLOW</span>
             </div>
           </div>
           
-          <div className="pt-4 border-t flex space-x-3">
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-800 flex space-x-3">
             <button
               type="submit"
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
@@ -200,7 +219,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors font-medium"
+              className="flex-1 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors font-medium"
             >
               Cancel
             </button>

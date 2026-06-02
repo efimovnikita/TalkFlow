@@ -21,6 +21,7 @@ const AutoShrinkText: React.FC<AutoShrinkTextProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textWrapperRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(maxFontSizeRem);
   const [resizeTrigger, setResizeTrigger] = useState(0);
   const lastDimensions = useRef({ width: 0, height: 0 });
@@ -71,11 +72,16 @@ const AutoShrinkText: React.FC<AutoShrinkTextProps> = ({
     }
 
     setFontSize(currentSize);
+
+    // Scroll to bottom synchronously so the user always sees the latest text
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [text, maxFontSizeRem, minFontSizeRem, suffix, resizeTrigger]);
 
   return (
     <div ref={containerRef} className="flex-1 w-full min-h-0 overflow-hidden relative">
-      <div className="absolute inset-0 overflow-y-auto px-1">
+      <div ref={scrollRef} className="absolute inset-0 overflow-y-auto px-1">
         <div
           ref={textWrapperRef}
           className={`${className} ${color} ${fontWeight} w-full pb-8`}

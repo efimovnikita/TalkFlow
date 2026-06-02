@@ -6,6 +6,7 @@ export interface Settings {
   microphoneDeviceId: string;
   vadThreshold: number;
   vadSilenceDuration: number;
+  mistralProxyUrl: string;
 }
 
 const STORAGE_KEY = 'talkflow_settings';
@@ -18,6 +19,7 @@ const DEFAULT_SETTINGS: Settings = {
   microphoneDeviceId: '',
   vadThreshold: 0.02,
   vadSilenceDuration: 2.0,
+  mistralProxyUrl: '',
 };
 
 export const loadSettings = (): Settings => {

@@ -8,6 +8,7 @@ import type { Settings } from './services/settingsService'
 import { audioService } from './services/audioService'
 import { transcribeSpeech, synthesizeSpeech } from './services/mistralService'
 import { translateText } from './services/translationService'
+import { MistralRealtimeService } from './services/mistralRealtimeService'
 import './App.css'
 
 type VADStatus = 'idle' | 'listening' | 'transcribing' | 'translating' | 'speaking';
@@ -31,6 +32,8 @@ function App() {
   
   // Use a ref to track the latest VAD mode state for callbacks
   const isVADModeRef = useRef(isVADMode)
+  const realtimeServiceRef = useRef<MistralRealtimeService | null>(null)
+  const realtimeTextRef = useRef('')
 
   const handleSaveSettings = (newSettings: Settings) => {
     setSettings(newSettings)
@@ -53,9 +56,16 @@ function App() {
     try {
       audioService.setVADPaused(true)
       setIsProcessing(true)
-      setRussianText('Transcribing...')
-      const text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
-      console.log('Transcription result:', text);
+      
+      let text = realtimeTextRef.current.trim()
+      
+      if (!text) {
+        setRussianText('Transcribing...')
+        text = await transcribeSpeech(audioBlob, settings.mistralApiKey)
+        console.log('Fallback transcription result:', text);
+      } else {
+        console.log('Using realtime transcription:', text);
+      }
       
       if (!text) {
          setRussianText('No speech detected.');
@@ -142,7 +152,19 @@ function App() {
       audioService.setVADPaused(false) // Just in case it was paused
       setIsVADMode(false)
       setVadStatus('idle')
+      
+      if (realtimeServiceRef.current) {
+        realtimeServiceRef.current.disconnect()
+        realtimeServiceRef.current = null
+      }
     } else {
+      // Check if proxy URL is configured
+      if (!settings.mistralProxyUrl || !settings.mistralProxyUrl.trim()) {
+        alert('Для работы автопрослушивания с транскрипцией в реальном времени необходимо указать адрес прокси-сервера в настройках.')
+        setIsSettingsOpen(true)
+        return
+      }
+
       const hasPermission = await audioService.requestPermission(settings.microphoneDeviceId)
       if (!hasPermission) {
         alert('Microphone permission is required.')
@@ -154,14 +176,47 @@ function App() {
       setVadStatus('listening')
       setRussianText('')
       setTranslatedText('')
+      realtimeTextRef.current = ''
       
       await audioService.initVAD(
         () => {
           if (!isVADModeRef.current) return
           setVadStatus('listening')
+          setRussianText('')
+          realtimeTextRef.current = ''
+          
+          // Connect to Mistral Realtime
+          const service = new MistralRealtimeService(
+            settings.mistralApiKey,
+            (text) => {
+              if (text) {
+                setRussianText(prev => {
+                  const newText = prev + text
+                  realtimeTextRef.current = newText
+                  return newText
+                })
+              }
+            },
+            (error) => {
+              console.error('Realtime transcription error:', error)
+            },
+            'voxtral-mini-transcribe-realtime-2602',
+            settings.mistralProxyUrl
+          )
+          
+          realtimeServiceRef.current = service
+          service.connect().catch(e => {
+            console.error('Failed to connect to realtime service:', e)
+          })
         },
         async (blob) => {
           if (!isVADModeRef.current) return
+          
+          if (realtimeServiceRef.current) {
+            realtimeServiceRef.current.disconnect()
+            realtimeServiceRef.current = null
+          }
+
           setVadStatus('transcribing')
           await processAudio(blob)
           
@@ -170,7 +225,12 @@ function App() {
           setVadStatus('listening')
         },
         settings.vadThreshold,
-        settings.vadSilenceDuration
+        settings.vadSilenceDuration,
+        (samples) => {
+          if (realtimeServiceRef.current) {
+            realtimeServiceRef.current.sendAudioChunk(samples)
+          }
+        }
       )
     }
   }

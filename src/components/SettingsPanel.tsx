@@ -80,6 +80,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onSave, onClose
           </div>
           
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mistral WebSocket Proxy URL</label>
+            <input
+              type="text"
+              name="mistralProxyUrl"
+              value={localSettings.mistralProxyUrl}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+              placeholder="wss://<your-gcf-url>.a.run.app"
+            />
+            <p className="text-[10px] text-gray-400 mt-1">
+              Необходимо для работы транскрипции в PWA на смартфоне. Оставьте пустым для локального прокси / прямого подключения.
+            </p>
+          </div>
+          
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Google Translation API Key</label>
             <input
               type="password"

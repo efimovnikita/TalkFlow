@@ -77,14 +77,20 @@ export class AudioService {
     });
   }
 
-  async initVAD(onSpeechStart: () => void, onSpeechEnd: (blob: Blob) => void, threshold: number = 0.02, silenceDuration: number = 2.0) {
+  async initVAD(
+    onSpeechStart: () => void,
+    onSpeechEnd: (blob: Blob) => void,
+    threshold: number = 0.02,
+    silenceDuration: number = 2.0,
+    onAudioChunk?: (samples: Float32Array) => void
+  ) {
     if (!this.stream) {
       const permitted = await this.requestPermission();
       if (!permitted) return;
     }
 
     if (!this.audioContext) {
-      this.audioContext = new AudioContext();
+      this.audioContext = new AudioContext({ sampleRate: 16000 });
     }
 
     if (this.audioContext.state === 'suspended') {
@@ -113,6 +119,10 @@ export class AudioService {
             onSpeechEnd(blob);
           }
         });
+      } else if (event.data.type === 'audio_chunk') {
+        if (onAudioChunk) {
+          onAudioChunk(event.data.samples);
+        }
       }
     };
 

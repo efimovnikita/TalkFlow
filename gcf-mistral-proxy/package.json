@@ -1,0 +1,17 @@
+{
+  "name": "gcf-mistral-proxy",
+  "version": "1.0.0",
+  "description": "Google Cloud Function WebSocket proxy for Mistral Realtime Transcription API",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx @google-cloud/functions-framework --target=mistralProxy"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}

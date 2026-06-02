@@ -22,42 +22,56 @@ const AutoShrinkText: React.FC<AutoShrinkTextProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const textWrapperRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(maxFontSizeRem);
+  const [resizeTrigger, setResizeTrigger] = useState(0);
+  const lastDimensions = useRef({ width: 0, height: 0 });
 
-  // Reset font size when text changes
-  useLayoutEffect(() => {
-    setFontSize(maxFontSizeRem);
-  }, [text, maxFontSizeRem]);
-
-  // Handle container resizing
+  // Handle container resizing with a threshold to avoid minor layout loops
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver(() => {
-      setFontSize(maxFontSizeRem);
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        const diffW = Math.abs(width - lastDimensions.current.width);
+        const diffH = Math.abs(height - lastDimensions.current.height);
+
+        // Only trigger recalculation if dimensions change by more than 2px
+        if (diffW > 2 || diffH > 2) {
+          lastDimensions.current = { width, height };
+          setResizeTrigger(prev => prev + 1);
+        }
+      }
     });
 
     resizeObserver.observe(containerRef.current);
 
     return () => resizeObserver.disconnect();
-  }, [maxFontSizeRem]);
+  }, []);
 
-  // Adjust font size if overflowing
+  // Synchronously adjust font size to avoid layout flickering (paint flashes)
   useLayoutEffect(() => {
-    const checkOverflow = () => {
-      if (!containerRef.current || !textWrapperRef.current) return;
-      
-      const containerHeight = containerRef.current.clientHeight;
-      const textHeight = textWrapperRef.current.scrollHeight;
+    if (!containerRef.current || !textWrapperRef.current) return;
 
-      // If text height > container height, reduce font size
-      if (textHeight > containerHeight + 1 && fontSize > minFontSizeRem) {
-        setFontSize(prev => Math.max(minFontSizeRem, prev - 0.05));
-      }
-    };
+    const container = containerRef.current;
+    const wrapper = textWrapperRef.current;
 
-    const frame = requestAnimationFrame(checkOverflow);
-    return () => cancelAnimationFrame(frame);
-  }, [fontSize, text, minFontSizeRem, suffix]);
+    // Start with maximum font size and shrink down until it fits
+    let currentSize = maxFontSizeRem;
+    wrapper.style.fontSize = `${currentSize}rem`;
+
+    let textHeight = wrapper.scrollHeight;
+    let containerHeight = container.clientHeight;
+
+    // Fast synchronous loop to find the best font size before paint
+    while (textHeight > containerHeight + 1 && currentSize > minFontSizeRem) {
+      currentSize = Math.round((currentSize - 0.05) * 100) / 100;
+      wrapper.style.fontSize = `${currentSize}rem`;
+      textHeight = wrapper.scrollHeight;
+      containerHeight = container.clientHeight;
+    }
+
+    setFontSize(currentSize);
+  }, [text, maxFontSizeRem, minFontSizeRem, suffix, resizeTrigger]);
 
   return (
     <div ref={containerRef} className="flex-1 w-full min-h-0 overflow-hidden relative">
@@ -80,3 +94,4 @@ const AutoShrinkText: React.FC<AutoShrinkTextProps> = ({
 };
 
 export default AutoShrinkText;
+

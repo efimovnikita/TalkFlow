@@ -229,7 +229,16 @@ function App() {
     <div className="h-screen bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200 flex flex-col overflow-hidden transition-colors duration-300">
       {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800/80 shadow-sm p-2 md:p-4 flex justify-between items-center z-10 relative">
-        <h1 className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-500">TalkFlow</h1>
+        <div className="flex flex-col">
+          <h1 className="sr-only">TalkFlow</h1>
+          <pre className="font-mono text-[3px] sm:text-[4px] md:text-[5.5px] lg:text-[7px] xl:text-[8px] leading-[3.5px] sm:leading-[5px] md:leading-[6.5px] lg:leading-[8px] xl:leading-[9px] bg-gradient-to-r from-blue-600 via-indigo-500 to-amber-500 dark:from-blue-400 dark:via-indigo-400 dark:to-amber-400 bg-clip-text text-transparent font-bold select-none whitespace-pre overflow-hidden">
+{`______   ______     __         __  __     ______   __         ______     __     __    
+/\\__  _\\ /\\  __ \\   /\\ \\       /\\ \\/ /    /\\  ___\\ /\\ \\       /\\  __ \\   /\\ \\  _ \\ \\   
+\\/_/\\ \\/ \\ \\  __ \\  \\ \\ \\____  \\ \\  _"-.  \\ \\  __\\ \\ \\ \\____  \\ \\ \\/\\ \\  \\ \\ \\/ ".\\ \\  
+   \\ \\_\\  \\ \\_\\ \\_\\  \\ \\_____\\  \\ \\_\\ \\_\\  \\ \\_\\    \\ \\_____\\  \\ \\_____\\  \\ \\__/".~\\_\\ 
+    \\/_/   \\/_/\\/_/   \\/_____/   \\/_/\\/_/   \\/_/     \\/_____/   \\/_____/   \\/_/   \\/_/`}
+          </pre>
+        </div>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setIsSettingsOpen(true)}
